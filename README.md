@@ -1,200 +1,218 @@
-# E-Commerce Customer Churn & Lifetime Value (LTV) Predictor
+# RetentionRadar — E-Commerce Customer Intelligence
 
-An end-to-end, production-grade machine learning system that predicts individual customer churn, models customer retention survival curves, and forecasts future Customer Lifetime Value (LTV) using probabilistic buy-till-you-die models, survival analysis, and XGBoost with Tree SHAP explainability.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
+  <img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Streamlit"/>
+  <img src="https://img.shields.io/badge/XGBoost-EC6B23?style=for-the-badge&logo=xgboost&logoColor=white" alt="XGBoost"/>
+  <img src="https://img.shields.io/badge/Machine_Learning-Models-blueviolet?style=for-the-badge" alt="Machine Learning"/>
+</p>
 
----
+<p align="center">
+  An interactive machine learning application that predicts customer churn, estimates customer lifetime value, and helps businesses identify high-risk customers worth retaining.
+</p>
 
-## 📌 Problem Statement
+<p align="center">
+  <a href="https://retentionradar-f23usj4z9jgmvsmmtczzbs.streamlit.app/">
+    <img src="https://img.shields.io/badge/🚀_OPEN_LIVE_WEBSITE-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Open RetentionRadar Live Website"/>
+  </a>
+  &nbsp;
+  <a href="https://github.com/niteshyadav200303/RetentionRadar">
+    <img src="https://img.shields.io/badge/VIEW_SOURCE_CODE-181717?style=for-the-badge&logo=github&logoColor=white" alt="View Source Code"/>
+  </a>
+</p>
 
-Customer acquisition in e-commerce is 5x to 25x more expensive than retaining existing customers. However, traditional churn models treat retention as a static classification task, leading to two major pitfalls:
-1. **Data Leakage & Arbitrary Churn Definitions:** In non-contractual retail, customers do not explicitly cancel accounts; they silently churn. Arbitrary churn definitions create severe forward-looking leakage.
-2. **Missing Customer Value Context:** Preventing a customer with £10 expected spend from churning produces negligible ROI compared to defending a customer with £2,000+ expected annual value.
-
-This project solves both challenges by combining:
-- A rigorous, leakage-free 90-day post-cutoff churn evaluation window.
-- **XGBoost classification** with Tree SHAP explainability for immediate churn risk.
-- **Cox Proportional Hazards & Kaplan-Meier survival analysis** to model remaining customer tenure.
-- **Beta-Geometric / Negative Binomial (BG/NBD) + Gamma-Gamma** probabilistic models to estimate future transaction frequency and monetary lifetime value.
-- An interactive **Streamlit Executive Dashboard** offering real-time scoring, cohort monitoring, and revenue-at-risk prioritization.
-
----
-
-## 📊 Dataset
-
-- **Source:** [UCI Machine Learning Repository: Online Retail II Data Set](https://archive.ics.uci.edu/dataset/502/online+retail+ii)
-- **Timeframe:** December 2009 – December 2011 (Two full years of actual transactions from a UK-based online retailer).
-- **Volume:** 1,067,371 raw transaction rows across two annual sheets (`Year 2009-2010` and `Year 2010-2011`).
-- **Cleaned Volume:** 805,549 verified transactions across 5,878 unique customer accounts after filtering missing IDs, cancellations, and negative entries.
-
----
-
-## 🧠 Methodology & Approach
-
-### 1. Leakage-Free Churn Definition
-- **Cutoff Date:** Last transaction timestamp in the dataset minus 90 days (`2011-09-10 12:50:00`).
-- **Observation Window:** All transactions occurring strictly **before** the cutoff date are used to engineer customer features.
-- **Evaluation Window:** The 90-day window following the cutoff date.
-- **Churn Label:**
-  $$\text{Churn} = \begin{cases} 1 & \text{if customer made 0 purchases in the 90-day evaluation window} \\ 0 & \text{if customer made } \ge 1 \text{ purchase in the 90-day evaluation window} \end{cases}$$
-
-### 2. Why Survival Analysis?
-Traditional binary classification only predicts *if* an event happens within a static window. **Survival analysis (Kaplan-Meier and Cox Proportional Hazards)** models *when* the event will happen and accounts for right-censoring:
-- Computes baseline survival probability across customer lifespans.
-- Identifies hazard ratios for order frequency, basket value, and repurchase cadence.
-- Yields expected remaining lifetime days for personalized retention timing.
-
-### 3. BG/NBD & Gamma-Gamma Probabilistic LTV
-In non-contractual commerce, purchasing and churn are latent continuous processes:
-- **BetaGeoFitter (BG/NBD):** Decomposes transaction frequency into a Poisson purchase process while active, and an exponential dropout process with Beta-distributed churn propensity.
-- **GammaGammaFitter:** Assumes transaction monetary values vary randomly around customer-specific average spends, modeled via a Gamma distribution.
-- **CLV Forecast:** Combines both models discounted at 1% weekly rate over 6-month and 12-month forward horizons:
-  $$\text{CLV} = \text{Expected Transactions} \times \text{Expected Average Spend} \times \text{Discount Factor}$$
+<p align="center">
+  <a href="https://github.com/niteshyadav200303/RetentionRadar/stargazers">
+    <img src="https://img.shields.io/github/stars/niteshyadav200303/RetentionRadar?style=social" alt="GitHub Stars"/>
+  </a>
+  <a href="https://github.com/niteshyadav200303/RetentionRadar/network/members">
+    <img src="https://img.shields.io/github/forks/niteshyadav200303/RetentionRadar?style=social" alt="GitHub Forks"/>
+  </a>
+  <a href="https://github.com/niteshyadav200303/RetentionRadar">
+    <img src="https://img.shields.io/github/last-commit/niteshyadav200303/RetentionRadar?color=blue" alt="Last Commit"/>
+  </a>
+</p>
 
 ---
 
-## 📈 Model Performance & Results
+## Overview
 
-### Churn Classification Comparison (Test Set Evaluation)
+**RetentionRadar** is an end-to-end e-commerce customer analytics and machine learning project designed to turn transaction history into actionable customer retention insights.
 
-| Metric | Baseline: Logistic Regression (Scaled) | Main: Tuned XGBoost (RandomizedSearchCV) |
-|---|:---:|:---:|
-| **Accuracy** | 74.6% | **75.1%** |
-| **Precision** | **75.4%** | 73.8% |
-| **Recall** | 81.9% | **86.8%** |
-| **F1 Score** | 0.785 | **0.798** |
-| **ROC-AUC** | 0.808 | **0.819** |
-| **PR-AUC** | **0.834** | 0.833 |
-| **Decision Threshold** | 0.500 | **0.440** (Optimized for F1) |
+Instead of looking at churn as an isolated yes-or-no prediction, the project combines churn probability, customer lifetime value (LTV), and survival analysis to help prioritize retention efforts.
 
-### Survival & LTV Validation
+The application includes an interactive Streamlit dashboard for exploring customer risk, estimating future value, and testing predictions with custom inputs.
 
-| Metric | Score | Interpretation |
-|---|:---:|---|
-| **Cox Concordance Index** | **0.9174** | Exceptional discriminative ranking of customer survival timelines. |
-| **Holdout Correlation** | **0.7312** | High correlation between predicted and actual customer purchases in holdout period. |
-| **High-Risk High-Value Cohort** | **196 Customers** | High churn risk with top 20% predicted LTV, representing prime targets for VIP retention. |
+## Key Features
 
----
+- **Customer Churn Prediction** — estimates the probability that a customer will become inactive.
+- **Customer Lifetime Value Forecasting** — estimates customer value over 6-month and 12-month horizons.
+- **Survival Analysis** — models customer retention and expected remaining lifetime.
+- **Customer Lookup** — explores individual customer risk and value estimates.
+- **Live Prediction Sandbox** — submits custom customer metrics to the trained prediction models.
+- **At-Risk Customer Prioritization** — helps identify high-risk customers with potentially high future value.
+- **Model Explainability** — uses SHAP-based feature attribution to help interpret churn predictions.
+- **Interactive Analytics** — visualizes churn distributions, customer segments, model performance, and supporting metrics.
 
-## 🖼️ Application Screenshots & Visuals
+## Machine Learning Approach
 
-*(Visualizations generated in `reports/figures/` and accessible live in the Streamlit app)*
+| Component | Technique | Purpose |
+|---|---|---|
+| Churn prediction | XGBoost | Estimate customer churn probability |
+| Model explainability | Tree SHAP | Understand influential prediction features |
+| Survival analysis | Cox Proportional Hazards and Kaplan–Meier | Analyze customer retention over time |
+| Purchase behavior | BG/NBD | Estimate future transaction frequency |
+| Monetary value | Gamma-Gamma | Estimate expected customer spending |
+| Business prioritization | Churn risk × predicted LTV | Highlight potentially valuable customers at risk |
 
-- **Overview Dashboard:** Executive KPIs, churn probability distribution, and segment LTV bar charts.
-  `reports/figures/monthly_revenue_and_active_customers.png`
-- **Confusion Matrix & ROC:**
-  `reports/figures/confusion_matrix.png` | `reports/figures/roc_curve.png`
-- **Feature Attribution (Tree SHAP):**
-  `reports/figures/shap_summary.png`
-- **Survival Curves (Kaplan-Meier):**
-  `reports/figures/survival_curves.png`
+The project uses a historical observation window and a subsequent 90-day evaluation window to define churn for the retail dataset.
 
----
+## Model Performance
 
-## 📁 Project Structure
+The following are the evaluation results documented for the trained models.
 
-```text
-churn-ltv-predictor/
-├── data/
-│   ├── raw/                      # Raw UCI Online Retail II dataset (git-ignored)
-│   └── processed/                # clean_transactions.csv, features.csv, customer_scores.csv
-├── models/                       # churn_xgb.joblib, cox.joblib, bgf.pkl, ggf.pkl, metrics.json
-├── notebooks/
-│   ├── 01_eda.ipynb              # Exploratory data analysis with inline visual plots
-│   └── 02_modeling.ipynb         # Model training, threshold tuning, and SHAP analysis
-├── src/
-│   ├── make_synthetic.py         # Realistic synthetic transaction generator fallback
-│   ├── data_prep.py              # Data cleaning and standardization pipeline
-│   ├── generate_eda_notebook.py  # Generates 01_eda.ipynb and reports/figures
-│   ├── features.py               # Feature engineering and cutoff churn labeling
-│   ├── train_churn.py            # Logistic Regression and XGBoost training with SHAP
-│   ├── generate_modeling_notebook.py # Generates 02_modeling.ipynb
-│   ├── train_survival.py         # Lifelines Kaplan-Meier and Cox PH model
-│   ├── train_ltv.py              # Lifetimes BG/NBD and Gamma-Gamma pipeline
-│   └── predict.py                # Real-time score_customer() inference engine
-├── app/
-│   └── app.py                    # Multi-page interactive Streamlit dashboard
-├── reports/
-│   └── figures/                  # Publication-ready charts, ROC curves, SHAP plots
-├── requirements.txt              # Production dependency specifications
-├── run_all.bat                   # 1-click Windows pipeline script
-├── run_all.sh                    # 1-click Unix/macOS pipeline script
-└── README.md                     # Comprehensive project documentation
+| Metric | XGBoost Result |
+|---|---:|
+| Accuracy | 75.1% |
+| Precision | 73.8% |
+| Recall | 86.8% |
+| F1 Score | 0.798 |
+| ROC-AUC | 0.819 |
+| PR-AUC | 0.833 |
+
+Additional documented validation results:
+
+- **Cox Concordance Index:** 0.9174
+- **Holdout correlation:** 0.7312
+
+These figures describe the recorded evaluation results; actual performance may differ on new customers or different datasets.
+
+## Dashboard Preview
+
+The repository includes model evaluation charts and exploratory data analysis visuals.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/niteshyadav200303/RetentionRadar/main/churn_rate_overview.png" width="48%" alt="Churn Rate Overview"/>
+  <img src="https://raw.githubusercontent.com/niteshyadav200303/RetentionRadar/main/confusion_matrix.png" width="48%" alt="Churn Model Confusion Matrix"/>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/niteshyadav200303/RetentionRadar/main/feature_importance.png" width="48%" alt="Feature Importance"/>
+  <img src="https://raw.githubusercontent.com/niteshyadav200303/RetentionRadar/main/roc_curve.png" width="48%" alt="ROC Curve"/>
+</p>
+
+<p align="center">
+  <a href="https://retentionradar-f23usj4z9jgmvsmmtczzbs.streamlit.app/">
+    <img src="https://img.shields.io/badge/Try_RetentionRadar_Live-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Try RetentionRadar Live"/>
+  </a>
+</p>
+
+## Technology Stack
+
+- **Language:** Python
+- **Dashboard:** Streamlit
+- **Data processing:** Pandas, NumPy
+- **Machine learning:** XGBoost, scikit-learn
+- **Model interpretation:** SHAP
+- **Survival analysis:** Lifelines
+- **Customer lifetime value:** Lifetimes
+- **Model persistence:** Joblib and Pickle
+- **Visualization:** Matplotlib and Seaborn
+
+## Dataset
+
+The project is based on the **UCI Online Retail II dataset**, containing historical transactions from a UK-based online retailer.
+
+The documented workflow cleans transaction records, engineers customer-level features, defines a churn evaluation window, and trains the predictive models.
+
+The original transaction data is separate from the trained model artifacts and processed customer data used by the application.
+
+## Run Locally
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/niteshyadav200303/RetentionRadar.git
+cd RetentionRadar
 ```
 
----
+### 2. Create a virtual environment
 
-## 🚀 Installation & Quickstart
-
-### 1. Clone the Repository and Set Up Environment
 ```bash
-git clone https://github.com/your-username/churn-ltv-predictor.git
-cd churn-ltv-predictor
+python -m venv .venv
+```
 
-# Create and activate virtual environment
-python -m venv venv
-# Windows:
-venv\Scripts\activate
-# Unix/macOS:
-source venv/bin/activate
+Activate it on Windows:
 
-# Install dependencies
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+### 3. Install dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. Execute Full Pipeline in Order
-You can run the full automated pipeline with a single command:
+### 4. Launch the dashboard
 
-**Windows:**
-```cmd
-run_all.bat
-```
-
-**Linux / macOS:**
 ```bash
-chmod +x run_all.sh
-./run_all.sh
+streamlit run app.py
 ```
 
-Or execute individual pipeline stages sequentially:
-```bash
-# 1. Clean transactions
-python src/data_prep.py
+The local dashboard will be available at the URL displayed in your terminal, usually `http://localhost:8501`.
 
-# 2. Engineer features & churn label
-python src/features.py
+**Note:** The repository must include the required model artifacts and processed CSV files for the existing dashboard and prediction functions to run. Reproducing model training may also require the original transaction dataset.
 
-# 3. Train churn models & SHAP explanations
-python src/train_churn.py
+## Project Structure
 
-# 4. Train Kaplan-Meier and Cox survival model
-python src/train_survival.py
-
-# 5. Train BG/NBD and Gamma-Gamma LTV models
-python src/train_ltv.py
-
-# 6. Launch interactive Streamlit dashboard
-streamlit run app/app.py
+```text
+RetentionRadar/
+├── app.py
+├── predict.py
+├── data_prep.py
+├── features.py
+├── make_synthetic.py
+├── train_churn.py
+├── train_ltv.py
+├── train_survival.py
+├── generate_eda_notebook.py
+├── generate_modeling_notebook.py
+├── 01_eda.ipynb
+├── 02_modeling.ipynb
+├── requirements.txt
+├── customer_scores.csv
+├── features.csv
+├── churn_xgb.joblib
+├── cox.joblib
+├── bgf.pkl
+├── ggf.pkl
+├── metrics.json
+└── README.md
 ```
 
----
+The repository also contains evaluation charts, analysis images, and helper scripts.
 
-## 🖥️ Streamlit Dashboard Pages
+## Future Improvements
 
-1. **📊 Overview Dashboard:** Executive KPI summary cards (Customer Count, Baseline Churn Rate, Total 12-Month LTV, High-Risk High-Value targets), interactive churn probability histogram, segment LTV breakdown, Kaplan-Meier curves, and expandable technical model diagnostics.
-2. **🔍 Customer Lookup:** Search any Customer ID to display an interactive churn risk gauge, 6m/12m LTV forecast, probability alive, personalized projected survival curve, top 3 SHAP drivers, and automated retention action recommendations.
-3. **⚡ Live Prediction:** Interactive sandbox form accepting customer transaction metrics to test real-time inference via `score_customer()`, returning churn probability, expected survival days, and plain-English explanations.
-4. **⚠️ At-Risk Customers:** Prioritized target table ranked by **Revenue at Risk** ($\text{Churn Probability} \times \text{LTV}_{12\text{m}}$) with multidimensional filters (risk level, segment, country) and instant CSV export.
+- Monitor model performance as customer behavior changes.
+- Improve model validation on additional time periods.
+- Add automated retention campaign recommendations.
+- Integrate new transaction data for refreshed customer scores.
+- Expand explanations of individual customer predictions.
 
----
+## License
 
-## 🔮 Limitations & Future Work
-
-- **Seasonality & Macro Effects:** Current BG/NBD formulation assumes stationary purchase rates; incorporating holiday and seasonal spikes (e.g. Q4 Black Friday / Christmas) using Hierarchical Bayesian models in PyMC would improve calendar accuracy.
-- **Product Recommender Integration:** Combining the churn trigger with collaborative filtering to suggest specific SKU replacements directly inside the automated retention playbook.
-- **Dynamic Pricing Elasticity:** Extending the retention recommendation module to estimate individual price elasticity before offering percentage discounts.
+The project README currently describes the project as MIT-licensed. Before reusing or distributing the project, ensure the repository contains the corresponding `LICENSE` file.
 
 ---
 
-## 📄 License
-MIT License. Open for educational and commercial adaptation.
+<p align="center">
+  <b>RetentionRadar — Predict risk. Understand value. Prioritize retention.</b>
+</p>
+
+<p align="center">
+  <a href="https://retentionradar-f23usj4z9jgmvsmmtczzbs.streamlit.app/">Live Website</a>
+  ·
+  <a href="https://github.com/niteshyadav200303/RetentionRadar">GitHub Repository</a>
+</p>
