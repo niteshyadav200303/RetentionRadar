@@ -1,0 +1,27 @@
+{
+    "LogisticRegression": {
+        "Accuracy": 0.7464522232734153,
+        "Precision": 0.7538461538461538,
+        "Recall": 0.8193979933110368,
+        "F1": 0.7852564102564102,
+        "ROC-AUC": 0.8077651722153001,
+        "PR-AUC": 0.8338188545310639
+    },
+    "XGBoost": {
+        "Accuracy": 0.7511825922421949,
+        "Precision": 0.7382645803698435,
+        "Recall": 0.8678929765886287,
+        "F1": 0.797847809377402,
+        "ROC-AUC": 0.8193178423357452,
+        "PR-AUC": 0.8326455794125845,
+        "Optimal_Threshold": 0.44000000000000006
+    },
+    "Best_Params": {
+        "subsample": 0.8,
+        "n_estimators": 100,
+        "min_child_weight": 1,
+        "max_depth": 6,
+        "learning_rate": 0.01,
+        "colsample_bytree": 0.9
+    }
+}
