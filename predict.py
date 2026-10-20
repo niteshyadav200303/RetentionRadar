@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 import shap
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-MODELS_DIR = BASE_DIR / "models"
+BASE_DIR = Path(__file__).resolve().parent
+MODELS_DIR = BASE_DIR
 
 # Lazy-loaded global model cache
 _MODELS = {}
