@@ -19,10 +19,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "data" / "processed"
-MODELS_DIR = BASE_DIR / "models"
-FIGURES_DIR = BASE_DIR / "reports" / "figures"
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR
+MODELS_DIR = BASE_DIR
+FIGURES_DIR = BASE_DIR
 
 if str(BASE_DIR) not in sys.path:
     sys.path.append(str(BASE_DIR))
