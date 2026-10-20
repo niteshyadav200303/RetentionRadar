@@ -27,7 +27,7 @@ FIGURES_DIR = BASE_DIR / "reports" / "figures"
 if str(BASE_DIR) not in sys.path:
     sys.path.append(str(BASE_DIR))
 
-from src.predict import score_customer
+from predict import score_customer
 
 
 @st.cache_data
